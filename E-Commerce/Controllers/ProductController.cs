@@ -45,9 +45,46 @@ namespace E_Commerce.Controllers
             return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Product>>> SearchProducts(
+    [FromQuery] string? name,
+    [FromQuery] int? categoryId,
+    [FromQuery] decimal? minPrice,
+    [FromQuery] decimal? maxPrice)
+        {
+            var query = _context.Products.AsQueryable();
+
+            // Filter by name
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(p => p.Name.Contains(name));
+            }
+
+            // Filter by category
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            // Filter by price range
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            // Include category information
+            var result = await query.Include(p => p.Category).ToListAsync();
+
+            return Ok(result);
+        }
+
 
         [HttpPut("{id}")]
-       // [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.Id)
