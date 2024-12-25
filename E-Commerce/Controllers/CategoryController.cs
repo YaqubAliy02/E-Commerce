@@ -8,7 +8,7 @@ namespace E_Commerce.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+   // [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly ECommerceDbContext _context;
@@ -35,7 +35,7 @@ namespace E_Commerce.Controllers
             return category;
         }
         // POST: api/Categories
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
@@ -44,7 +44,7 @@ namespace E_Commerce.Controllers
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
         }
         // PUT: api/Categories/5
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
@@ -71,7 +71,7 @@ namespace E_Commerce.Controllers
             return NoContent();
         }
         // DELETE: api/Categories/5
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
