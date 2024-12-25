@@ -1,10 +1,14 @@
+using System;
 using System.Text;
 using E_Commerce.Data;
 using E_Commerce.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +40,21 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false
     };
 });
+builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 builder.Services.AddSwaggerGen();
+Log.Logger = new LoggerConfiguration()
+.WriteTo.Console()
+.WriteTo.File("logs/log-.txt", rollingInterval:
+RollingInterval.Day)
+.CreateLogger();
+builder.Host.UseSerilog();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0); // Default to version 1.0
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true; // Include version information in the response headers
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,7 +65,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

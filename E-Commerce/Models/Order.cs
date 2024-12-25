@@ -7,6 +7,7 @@
         public Customer Customer { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
+        public string PaymentStatus { get; set; } = "Pending";
         public ICollection<OrderItem> OrderItems { get; set; }
     }
 }

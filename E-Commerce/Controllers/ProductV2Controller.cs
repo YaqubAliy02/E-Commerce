@@ -8,22 +8,22 @@ using Serilog;
 namespace E_Commerce.Controllers
 {
     //[Authorize]
-    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     [Route("api/v{version:ApiVersion}/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductController : ControllerBase
     {
         private readonly ECommerceDbContext _context;
 
-        public ProductsController(ECommerceDbContext context)
+        public ProductController(ECommerceDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public ActionResult<string> GetProducts()
         {
-            return await _context.Products.Include(p => p.Category).ToListAsync();
+            return "This is version 2.0 of the Products API";
         }
 
         [HttpGet("{id}")]
