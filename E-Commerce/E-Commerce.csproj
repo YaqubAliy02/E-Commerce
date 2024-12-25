@@ -23,6 +23,7 @@
     </PackageReference>
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="1.2.70" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
 
