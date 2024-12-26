@@ -1,4 +1,6 @@
-﻿using E_Commerce.Data;
+﻿using AutoMapper;
+using E_Commerce.Data;
+using E_Commerce.DTOs.Product;
 using E_Commerce.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,18 +16,29 @@ namespace E_Commerce.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ECommerceDbContext _context;
+        private readonly IMapper mapper;
 
-        public ProductsController(ECommerceDbContext context)
+        public ProductsController(ECommerceDbContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieves all products.
+        /// </summary>
+        /// <returns>A list of products.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             return await _context.Products.Include(p => p.Category).ToListAsync();
         }
 
+        /// <summary>
+        /// Retrieves a specific product by ID.
+        /// </summary>
+        /// <param name="id">The product ID.</param>
+        /// <returns>The requested product.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
@@ -38,30 +51,37 @@ namespace E_Commerce.Controllers
             return product;
         }
 
-        [HttpPost]
-        //[Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<ProductDTO>> PostProduct([FromBody] CreateProductDTO productDto)
         {
-            if (string.IsNullOrEmpty(product.Name))
+            var product = this.mapper.Map<Product>(productDto);
+
+            var category = await _context.Categories.FindAsync(productDto.CategoryId);
+            if (category == null)
             {
-                Log.Warning("Product creation failed due to missing name.");
-                return BadRequest("Product name is required.");
+                return BadRequest("The specified category does not exist.");
             }
+
+            product.Category = category;
+
+            _context.Products.Add(product);
 
             try
             {
-                _context.Products.Add(product);
                 await _context.SaveChangesAsync();
-                Log.Information($"Product {product.Name} created with Id {product.Id} successfully.");
             }
-            catch (Exception exception)
+            catch (DbUpdateException ex)
             {
-                Log.Error(exception, "Failed to create product {ProductName}", product.Name);
-                throw;
+                return StatusCode(500, "An error occurred while saving the product.");
             }
 
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            var savedProduct = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == product.Id);
+
+            return CreatedAtAction(nameof(GetProduct), new { id = savedProduct.Id },
+                                   this.mapper.Map<ProductDTO>(savedProduct));
         }
+
 
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<Product>>> SearchProducts(

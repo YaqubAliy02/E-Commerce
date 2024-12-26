@@ -41,7 +41,24 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "1.0",
+        Title = "E-Commerce API",
+        Description = "Api for managing an e-commerce platform (v1.0)",
+    });
+
+    options.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "2.0",
+        Title = "E-Commerce API",
+        Description = "API for managing an e-commerce platform (v2.0)"
+    });
+});
+
 Log.Logger = new LoggerConfiguration()
 .WriteTo.Console()
 .WriteTo.File("logs/log-.txt", rollingInterval:
@@ -55,6 +72,8 @@ builder.Services.AddApiVersioning(options =>
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true; // Include version information in the response headers
 });
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -63,7 +82,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "E-Commerce API v1.0");
+
+        options.SwaggerEndpoint("/swagger/v2/swagger.json", "E-Commerce API v2.0");
+    });
 }
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();

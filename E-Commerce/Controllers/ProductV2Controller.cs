@@ -19,13 +19,20 @@ namespace E_Commerce.Controllers
         {
             _context = context;
         }
-
+        /// <summary>
+        /// Retrieves all products.
+        /// </summary>
+        /// <returns>A list of products.</returns>
         [HttpGet]
         public ActionResult<string> GetProducts()
         {
             return "This is version 2.0 of the Products API";
         }
-
+        /// <summary>
+        /// Retrieves a specific product by ID.
+        /// </summary>
+        /// <param name="id">The product ID.</param>
+        /// <returns>The requested product.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {

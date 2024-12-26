@@ -11,8 +11,7 @@ namespace E_Commerce.Models
         public int Stock { get; set; }
 
         public int CategoryId { get; set; }
-        [JsonIgnore]
-        public Category Category { get; set; }
+        public virtual Category Category { get; set; }
         public string ImageUrl { get; set; }
     }
 }
