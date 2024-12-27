@@ -38,7 +38,7 @@ namespace E_Commerce.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.Customer", b =>
@@ -66,7 +66,7 @@ namespace E_Commerce.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.Order", b =>
@@ -93,7 +93,7 @@ namespace E_Commerce.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.OrderItem", b =>
@@ -122,7 +122,7 @@ namespace E_Commerce.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.Product", b =>
@@ -155,7 +155,7 @@ namespace E_Commerce.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.User", b =>
@@ -177,7 +177,7 @@ namespace E_Commerce.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("E_Commerce.Models.Order", b =>

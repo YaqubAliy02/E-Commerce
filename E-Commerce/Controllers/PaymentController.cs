@@ -25,15 +25,14 @@ namespace E_Commerce.Controllers
         [HttpPost("charge")]
         public async Task<IActionResult> ProcessPayment(int orderId)
         {
-            var order = await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == orderId);
+            var order = await _context.Orders.Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
             if (order == null)
-            {
                 return NotFound("Order not found.");
-            }
+
             if (order.PaymentStatus == "Paid")
-            {
                 return BadRequest("Order is already paid.");
-            }
 
             try
             {

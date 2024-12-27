@@ -42,6 +42,7 @@ namespace E_Commerce.Controllers
 
         // POST: api/Categories
         // [Authorize(Roles = "Admin")]
+        [HttpPost]
         public async Task<ActionResult<CategoryDTO>> PostCategory(CreateCategoryDTO categoryDto)
         {
             if (!ModelState.IsValid)
@@ -58,6 +59,7 @@ namespace E_Commerce.Controllers
 
         // PUT: api/Categories/5
         // [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, UpdateCategoryDTO categoryDto)
         {
             var category = await _context.Categories.FindAsync(id);

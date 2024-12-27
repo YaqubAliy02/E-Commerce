@@ -1,4 +1,6 @@
-﻿using E_Commerce.Data;
+﻿using AutoMapper;
+using E_Commerce.Data;
+using E_Commerce.DTOs.Oder;
 using E_Commerce.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,39 +14,41 @@ namespace E_Commerce.Controllers
     public class OrderController : ControllerBase
     {
         private readonly ECommerceDbContext _context;
+        private readonly IMapper mapper;
 
-        public OrderController(ECommerceDbContext context)
+        public OrderController(ECommerceDbContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/Orders
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        public async Task<ActionResult<IEnumerable<OrderDTO>>> GetOrders()
         {
-            return await _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-                .ToListAsync();
+            var orders = await _context.Orders
+            .Include(o => o.Customer)
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .ThenInclude(p => p.Category)
+            .ToListAsync();
+            return Ok(this.mapper.Map<IEnumerable<OrderDTO>>(orders));
         }
 
         // GET: api/Orders/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrder(int id)
+        public async Task<ActionResult<OrderDTO>> GetOrder(int id)
         {
             var order = await _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-                .FirstOrDefaultAsync(o => o.Id == id);
+            .Include(o => o.Customer)
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .ThenInclude(p => p.Category)
+            .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (order == null)
-            {
-                return NotFound();
-            }
+            if (order == null) return NotFound();
 
-            return order;
+            return Ok(this.mapper.Map<OrderDTO>(order));
         }
 
         // POST: api/Orders

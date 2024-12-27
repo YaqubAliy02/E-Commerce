@@ -1,4 +1,6 @@
-﻿using E_Commerce.Data;
+﻿using AutoMapper;
+using E_Commerce.Data;
+using E_Commerce.DTOs.Customer;
 using E_Commerce.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,74 +14,65 @@ namespace ECommerceAPI.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ECommerceDbContext _context;
+        private readonly IMapper mapper;
 
-        public CustomerController(ECommerceDbContext context)
+        public CustomerController(ECommerceDbContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<IEnumerable<CustomerDTO>>> GetCustomers()
         {
-            return await _context.Customers.ToListAsync();
+            var customers = await _context.Customers.ToListAsync();
+            return Ok(this.mapper.Map<IEnumerable<CustomerDTO>>(customers));
         }
 
         // GET: api/Customers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Customer>> GetCustomer(int id)
+        public async Task<ActionResult<CustomerDTO>> GetCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null)
             {
                 return NotFound();
             }
-
-            return customer;
+            return this.mapper.Map<CustomerDTO>(customer);
         }
 
         // POST: api/Customers
         [HttpPost]
-        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        public async Task<ActionResult<CustomerDTO>> PostCustomer(CreateCustomerDTO customerDto)
         {
-            if (!IsValidEmail(customer.Email))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid email format.");
+                return BadRequest(ModelState);
             }
-
+            var customer = this.mapper.Map<Customer>(customerDto);
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
+            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id },
+            this.mapper.Map<CustomerDTO>(customer));
         }
 
         // PUT: api/Customers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(int id, Customer customer)
+        public async Task<IActionResult> PutCustomer(int id, CustomerDTO customerDto)
         {
-            if (id != customer.Id)
-            {
-                return BadRequest("The provided ID does not match the customer's ID.");
-            }
+            if (id != customerDto.Id)
+                return BadRequest();
 
-            if (!IsValidEmail(customer.Email))
-            {
-                return BadRequest("Invalid email format.");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Fetch the existing entity to ensure it exists and avoid concurrency issues
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
-            if (existingCustomer == null)
-            {
-                return NotFound("Customer not found.");
-            }
+            var customer = await _context.Customers.FindAsync(id);
 
-            // Manually update only the properties that need to be changed
-            existingCustomer.FirstName = customer.FirstName;
-            existingCustomer.LastName = customer.LastName;
-            existingCustomer.PhoneNumber = customer.PhoneNumber; // Add other fields as needed
-            existingCustomer.Email = customer.Email;
-            existingCustomer.Address = customer.Address;
+            if (customer == null)
+                return NotFound();
+
+            this.mapper.Map(customerDto, customer);
 
             try
             {
@@ -88,13 +81,9 @@ namespace ECommerceAPI.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!CustomerExists(id))
-                {
-                    return NotFound("Customer not found after update attempt.");
-                }
-                else
-                {
-                    throw;
-                }
+                    return NotFound();
+
+                else throw;
             }
 
             return NoContent();
@@ -105,10 +94,9 @@ namespace ECommerceAPI.Controllers
         public async Task<IActionResult> DeleteCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
+
             if (customer == null)
-            {
                 return NotFound();
-            }
 
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
